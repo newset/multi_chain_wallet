@@ -1,4 +1,4 @@
-import 'package:multi_chain_wallet/wallet_derivation.dart';
+import 'package:multi_chain_wallet/multi_chain_wallet.dart';
 import 'package:test/test.dart';
 
 void main() {

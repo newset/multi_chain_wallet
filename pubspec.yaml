@@ -1,6 +1,8 @@
 name: multi_chain_wallet
 description: Pure Dart mnemonic wallet derivation for Bitcoin, Dogecoin, EVM chains, XRPL, TRON, and Solana.
 version: 0.1.0
+homepage: https://github.com/newset/multi_chain_wallet
+repository: https://github.com/newset/multi_chain_wallet
 
 environment:
   sdk: ^3.3.0
