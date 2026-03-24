@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- update solana private key
+
 ## 0.1.0
 
 - Initial public release
