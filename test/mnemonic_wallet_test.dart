@@ -154,7 +154,7 @@ void main() {
 
       expect(wallet.path, "m/44'/501'/0'/0'");
       expect(wallet.privateKeyHex,
-          '73398ed9ce607c437b79808d1348db609dc337a7c83ebc64ad2b5ec078f21e51');
+          '3Jch9xvCcCW92J3DpqwKxDS1RqwFRq9RmVrkArCBpYXmzrdnPg7i4Q4Y9U7V7UZ57Jb4aTfob1A8nmPZ1XzcsSAx');
       expect(
         wallet.publicKeyHex,
         'b4c4bfbc5c1b45b4b3d4737434c1cef141e5215812eacc916f8636858de91fe5',

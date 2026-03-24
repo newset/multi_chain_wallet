@@ -105,6 +105,7 @@ class MnemonicWallet {
       case SupportedChain.xrpEvm:
         return _fromEvmPrivateKey(privateKey, SupportedChain.xrpEvm);
       case SupportedChain.solana:
+        final privateKey = base58Decode(privateKeyHex);
         return _fromSolanaPrivateKey(privateKey);
     }
   }
@@ -288,13 +289,18 @@ class MnemonicWallet {
   static Future<DerivedWallet> _fromSolanaPrivateKey(Uint8List privateKey) async {
     final chain = SupportedChain.solana;
     final algorithm = Ed25519();
-    final keyPair = await algorithm.newKeyPairFromSeed(privateKey);
+    // If 64 bytes, take first 32 as seed; otherwise use as seed
+    final seed = privateKey.length == 64 ? privateKey.sublist(0, 32) : privateKey;
+    final keyPair = await algorithm.newKeyPairFromSeed(seed);
     final publicKey = (await keyPair.extractPublicKey()).bytes;
+
+    // Solana private key format: 64 bytes (32 private + 32 public), base58 encoded
+    final fullPrivateKey = Uint8List.fromList([...seed, ...publicKey]);
 
     return DerivedWallet(
       chain: chain,
       path: chain.defaultPath,
-      privateKeyHex: bytesToHex(privateKey),
+      privateKeyHex: base58Encode(fullPrivateKey),
       publicKeyHex: bytesToHex(publicKey),
       address: base58Encode(publicKey),
     );

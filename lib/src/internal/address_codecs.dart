@@ -156,3 +156,35 @@ int bech32Polymod(List<int> values) {
   }
   return chk;
 }
+
+Uint8List base58Decode(String input, {String alphabet = bitcoinBase58Alphabet}) {
+  if (input.isEmpty) {
+    return Uint8List(0);
+  }
+
+  final base = BigInt.from(alphabet.length);
+  var value = BigInt.zero;
+  for (final char in input.codeUnits) {
+    final index = alphabet.indexOf(String.fromCharCode(char));
+    if (index == -1) {
+      throw ArgumentError('Invalid character in base58 string: $char');
+    }
+    value = value * base + BigInt.from(index);
+  }
+
+  final bytes = <int>[];
+  while (value > BigInt.zero) {
+    bytes.add((value % BigInt.from(256)).toInt());
+    value ~/= BigInt.from(256);
+  }
+
+  // Add leading zeros
+  for (final char in input.codeUnits) {
+    if (String.fromCharCode(char) != alphabet[0]) {
+      break;
+    }
+    bytes.add(0);
+  }
+
+  return Uint8List.fromList(bytes.reversed.toList());
+}
