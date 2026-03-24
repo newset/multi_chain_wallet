@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^sudo apt update && sudo apt install -y python3-pip$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
