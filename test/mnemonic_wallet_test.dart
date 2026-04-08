@@ -13,6 +13,7 @@ void main() {
       expect(SupportedChainX.fromChainId(144), SupportedChain.xrpl);
       expect(SupportedChainX.fromChainId(195), SupportedChain.tron);
       expect(SupportedChainX.fromChainId(501), SupportedChain.solana);
+      expect(SupportedChainX.fromChainId(784), SupportedChain.sui);
       expect(SupportedChainX.fromChainId(999999), isNull);
     });
 
@@ -162,6 +163,21 @@ void main() {
       expect(wallet.address, 'DAePhcFaiy3hRjm8uGojUrUCvuRyqjmyMfQF4aNXMkcC');
     });
 
+    test('derives the expected Sui wallet', () async {
+      final wallet = await MnemonicWallet.derive(
+        mnemonic: mnemonic,
+        chain: SupportedChain.sui,
+      );
+
+      expect(wallet.path, "m/44'/784'/0'/0'/0'");
+      expect(wallet.privateKeyHex,
+          '2b550f01f2ac13131334fb5915e6402900c8c1724b2bf22a0fdffd89d8a6bd4d');
+      expect(wallet.publicKeyHex,
+          '3ab2c49580eca20d09de3c06e4fbc7613b89defdf368b73d4a7f98569cfdd9d7');
+      expect(wallet.address,
+          '0x3260931382ba27c8ba4c0f6454680cebd6924aaf3a53441f735d61ac636142de');
+    });
+
     test('deriveAll returns all supported chains', () async {
       final wallets = await MnemonicWallet.deriveAll(mnemonic: mnemonic);
 
@@ -182,6 +198,8 @@ void main() {
           '0xff87baeeb8a7af69ef5dccfb8fb6515e3775f1d7');
       expect(wallets[SupportedChain.solana]!.address,
           'DAePhcFaiy3hRjm8uGojUrUCvuRyqjmyMfQF4aNXMkcC');
+      expect(wallets[SupportedChain.sui]!.address,
+          '0x3260931382ba27c8ba4c0f6454680cebd6924aaf3a53441f735d61ac636142de');
     });
 
     test('fromPrivateKey rebuilds the expected Bitcoin SegWit wallet',
@@ -209,6 +227,19 @@ void main() {
           '03b342da8f9ee5ede1481a943381cac0ae06cf9e424dc2adb3d4fe5dc2f1daed18');
     });
 
+    test('fromPrivateKey rebuilds the expected Sui wallet', () async {
+      final wallet = await MnemonicWallet.fromPrivateKey(
+        privateKeyHex:
+            '2b550f01f2ac13131334fb5915e6402900c8c1724b2bf22a0fdffd89d8a6bd4d',
+        chain: SupportedChain.sui,
+      );
+
+      expect(wallet.address,
+          '0x3260931382ba27c8ba4c0f6454680cebd6924aaf3a53441f735d61ac636142de');
+      expect(wallet.publicKeyHex,
+          '3ab2c49580eca20d09de3c06e4fbc7613b89defdf368b73d4a7f98569cfdd9d7');
+    });
+
     test('addressFromPrivateKey returns the expected XRP EVM address',
         () async {
       final address = await MnemonicWallet.addressFromPrivateKey(
@@ -228,6 +259,17 @@ void main() {
       );
 
       expect(address, 'TDGDU7hksRQDTUfndaJQoGhbvWeYWaBqHz');
+    });
+
+    test('addressFromPrivateKey returns the expected Sui address', () async {
+      final address = await MnemonicWallet.addressFromPrivateKey(
+        privateKeyHex:
+            '0x0bdf81a6767054c420121063394d38979349295fefb3c12cbd94db3c01d1ff52',
+        chain: SupportedChain.sui,
+      );
+
+      expect(address,
+          '0x4ce3605cc06093031e9629613377d4b68e67c930d93f842a8904b40c711c7a45');
     });
 
     test('rejects an empty mnemonic', () {

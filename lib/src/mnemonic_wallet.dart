@@ -3,7 +3,12 @@ import 'dart:typed_data';
 import 'package:cryptography/cryptography.dart';
 import 'package:pointycastle/ecc/curves/secp256k1.dart';
 import 'package:pointycastle/export.dart'
-    show HMac, PBKDF2KeyDerivator, Pbkdf2Parameters, SHA512Digest;
+    show
+        Blake2bDigest,
+        HMac,
+        PBKDF2KeyDerivator,
+        Pbkdf2Parameters,
+        SHA512Digest;
 
 import 'chains/supported_chain.dart';
 import 'internal/address_codecs.dart';
@@ -50,6 +55,8 @@ class MnemonicWallet {
         return _deriveEvm(seed, SupportedChain.xrpEvm);
       case SupportedChain.solana:
         return _deriveSolana(seed);
+      case SupportedChain.sui:
+        return _deriveSui(seed);
     }
   }
 
@@ -107,6 +114,8 @@ class MnemonicWallet {
       case SupportedChain.solana:
         final privateKey = base58Decode(privateKeyHex);
         return _fromSolanaPrivateKey(privateKey);
+      case SupportedChain.sui:
+        return _fromSuiPrivateKey(privateKey);
     }
   }
 
@@ -286,11 +295,13 @@ class MnemonicWallet {
     return _fromSolanaPrivateKey(node.privateKey);
   }
 
-  static Future<DerivedWallet> _fromSolanaPrivateKey(Uint8List privateKey) async {
+  static Future<DerivedWallet> _fromSolanaPrivateKey(
+      Uint8List privateKey) async {
     final chain = SupportedChain.solana;
     final algorithm = Ed25519();
     // If 64 bytes, take first 32 as seed; otherwise use as seed
-    final seed = privateKey.length == 64 ? privateKey.sublist(0, 32) : privateKey;
+    final seed =
+        privateKey.length == 64 ? privateKey.sublist(0, 32) : privateKey;
     final keyPair = await algorithm.newKeyPairFromSeed(seed);
     final publicKey = (await keyPair.extractPublicKey()).bytes;
 
@@ -303,6 +314,28 @@ class MnemonicWallet {
       privateKeyHex: base58Encode(fullPrivateKey),
       publicKeyHex: bytesToHex(publicKey),
       address: base58Encode(publicKey),
+    );
+  }
+
+  static Future<DerivedWallet> _deriveSui(Uint8List seed) async {
+    final chain = SupportedChain.sui;
+    final node = Slip10Ed25519.fromSeed(seed).derivePath(chain.defaultPath);
+    return _fromSuiPrivateKey(node.privateKey);
+  }
+
+  static Future<DerivedWallet> _fromSuiPrivateKey(Uint8List privateKey) async {
+    final chain = SupportedChain.sui;
+    final algorithm = Ed25519();
+    final keyPair = await algorithm.newKeyPairFromSeed(privateKey);
+    final publicKey = (await keyPair.extractPublicKey()).bytes;
+    final address = _suiAddress(publicKey);
+
+    return DerivedWallet(
+      chain: chain,
+      path: chain.defaultPath,
+      privateKeyHex: bytesToHex(privateKey),
+      publicKeyHex: bytesToHex(publicKey),
+      address: address,
     );
   }
 
@@ -335,5 +368,14 @@ class MnemonicWallet {
     final x = bigIntToBytes(point.x!.toBigInteger()!, 32);
     final y = bigIntToBytes(point.y!.toBigInteger()!, 32);
     return Uint8List.fromList([...x, ...y]);
+  }
+
+  static String _suiAddress(List<int> publicKey) {
+    // Sui address = 0x + blake2b-256(signature_scheme_flag || public_key)
+    const ed25519Flag = 0x00;
+    final digest = Blake2bDigest(digestSize: 32);
+    final hash =
+        digest.process(Uint8List.fromList([ed25519Flag, ...publicKey]));
+    return '0x${bytesToHex(hash)}';
   }
 }

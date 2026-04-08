@@ -8,6 +8,7 @@ enum SupportedChain {
   xrpl,
   xrpEvm,
   solana,
+  sui,
 }
 
 class SupportedChainInfo {
@@ -68,6 +69,11 @@ const Map<SupportedChain, SupportedChainInfo> supportedChainInfo = {
     chainId: 501,
     path: "m/44'/501'/0'/0'",
   ),
+  SupportedChain.sui: SupportedChainInfo(
+    chain: SupportedChain.sui,
+    chainId: 784,
+    path: "m/44'/784'/0'/0'/0'",
+  ),
 };
 
 const Map<int, SupportedChain> _defaultChainById = {
@@ -77,6 +83,7 @@ const Map<int, SupportedChain> _defaultChainById = {
   144: SupportedChain.xrpl,
   195: SupportedChain.tron,
   501: SupportedChain.solana,
+  784: SupportedChain.sui,
 };
 
 extension SupportedChainX on SupportedChain {

@@ -13,6 +13,7 @@ Pure Dart mnemonic-based wallet derivation for multiple chains.
 - `xrpl` - native XRP Ledger (`r...`)
 - `xrpEvm` - EVM-style XRP address (`0x...`)
 - `solana`
+- `sui` - Ed25519 + Blake2b address (`0x...`)
 
 ## Features
 
@@ -54,6 +55,7 @@ Future<void> main() async {
 
 - `chainId` in this package follows the BIP44 / SLIP-0044 coin type style used by derivation paths.
 - Some chains share the same id. For example `eth`, `bnb`, and `xrpEvm` all map to `60`.
+- `sui` uses path `m/44'/784'/0'/0'/0'` and address `0x + blake2b-256(0x00 || publicKey)`.
 - `SupportedChainX.fromChainId` returns the canonical default chain for that id.
 - `SupportedChainX.allForChainId` returns every supported chain that shares the same id.
 

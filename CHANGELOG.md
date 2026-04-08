@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added Sui chain support (`chainId` 784) with mnemonic derivation, private-key import, and address generation.
+
 ## 0.1.1
 
 - update solana private key
