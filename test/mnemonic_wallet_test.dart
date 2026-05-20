@@ -163,6 +163,26 @@ void main() {
       expect(wallet.address, 'DAePhcFaiy3hRjm8uGojUrUCvuRyqjmyMfQF4aNXMkcC');
     });
 
+    test('derives the expected Solana wallet for style prefer mnemonic',
+        () async {
+      const solanaMnemonic =
+          'style prefer arrive loan sock parade manual car promote cement middle pear';
+
+      final wallet = await MnemonicWallet.derive(
+        mnemonic: solanaMnemonic,
+        chain: SupportedChain.solana,
+      );
+
+      expect(wallet.path, "m/44'/501'/0'/0'");
+      expect(wallet.privateKeyHex,
+          '4ZZKr4vXgyADj4hBtwf32i3G3ChoGtY7t9JsAdf8KMpWNi6Ez7EHUdChJ4xuCNiZcBr1MoQpKDj6AKSpQ85F2VrC');
+      expect(
+        wallet.publicKeyHex,
+        '54c05f075771874d5ae3c1479e03b971e03a22c99b71167fac9c4df0c67b18dd',
+      );
+      expect(wallet.address, '6hqP5cY46u6km1dHagqqEJygUN6UcHXESeK8pwKRFoik');
+    });
+
     test('derives the expected Sui wallet', () async {
       final wallet = await MnemonicWallet.derive(
         mnemonic: mnemonic,
