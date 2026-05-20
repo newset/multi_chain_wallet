@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Added Sui chain support (`chainId` 784) with mnemonic derivation, private-key import, and address generation.
+## 0.1.2
+
+- Added `sign` method for Solana (Ed25519 raw bytes signing)
+- Added `signPersonalMessage` method for Solana (UTF-8 message signing)
+- Added tests for Solana sign methods
 
 ## 0.1.1
 
