@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:cryptography/cryptography.dart';
 import 'package:multi_chain_wallet/multi_chain_wallet.dart';
 import 'package:test/test.dart';
 
@@ -308,6 +311,87 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    group('Solana sign', () {
+      test('sign returns a valid Ed25519 signature', () async {
+        final wallet = await MnemonicWallet.derive(
+          mnemonic: mnemonic,
+          chain: SupportedChain.solana,
+        );
+
+        final message = Uint8List.fromList([1, 2, 3, 4, 5]);
+        final signature = await MnemonicWallet.sign(
+          privateKeyHex: wallet.privateKeyHex,
+          chain: SupportedChain.solana,
+          message: message,
+        );
+
+        // Ed25519 signature is always 64 bytes
+        expect(signature.length, 64);
+
+        // Verify the signature against the public key
+        final algorithm = Ed25519();
+        final publicKey = SimplePublicKey(
+          _hexToBytes(wallet.publicKeyHex),
+          type: KeyPairType.ed25519,
+        );
+        expect(
+          algorithm.verify(message, signature: Signature(signature, publicKey: publicKey)),
+          completion(isTrue),
+        );
+      });
+
+      test('signPersonalMessage returns a valid Ed25519 signature', () async {
+        final wallet = await MnemonicWallet.derive(
+          mnemonic: mnemonic,
+          chain: SupportedChain.solana,
+        );
+
+        const message = 'Hello, Solana!';
+        final signature = await MnemonicWallet.signPersonalMessage(
+          privateKeyHex: wallet.privateKeyHex,
+          chain: SupportedChain.solana,
+          message: message,
+        );
+
+        expect(signature.length, 64);
+
+        // Verify the signature against the public key
+        final algorithm = Ed25519();
+        final publicKey = SimplePublicKey(
+          _hexToBytes(wallet.publicKeyHex),
+          type: KeyPairType.ed25519,
+        );
+        expect(
+          algorithm.verify(
+            Uint8List.fromList(message.codeUnits),
+            signature: Signature(signature, publicKey: publicKey),
+          ),
+          completion(isTrue),
+        );
+      });
+
+      test('sign produces deterministic signatures', () async {
+        final wallet = await MnemonicWallet.derive(
+          mnemonic: mnemonic,
+          chain: SupportedChain.solana,
+        );
+
+        final message = Uint8List.fromList([10, 20, 30]);
+        final sig1 = await MnemonicWallet.sign(
+          privateKeyHex: wallet.privateKeyHex,
+          chain: SupportedChain.solana,
+          message: message,
+        );
+        final sig2 = await MnemonicWallet.sign(
+          privateKeyHex: wallet.privateKeyHex,
+          chain: SupportedChain.solana,
+          message: message,
+        );
+
+        expect(sig1, sig2);
+      });
+    });
   });
 }
 
@@ -317,4 +401,12 @@ String _toHex(List<int> bytes) {
     buffer.write(byte.toRadixString(16).padLeft(2, '0'));
   }
   return buffer.toString();
+}
+
+Uint8List _hexToBytes(String hex) {
+  final result = Uint8List(hex.length ~/ 2);
+  for (var i = 0; i < result.length; i++) {
+    result[i] = int.parse(hex.substring(i * 2, i * 2 + 2), radix: 16);
+  }
+  return result;
 }

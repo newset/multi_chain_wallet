@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
@@ -144,6 +145,46 @@ class MnemonicWallet {
       ..init(Pbkdf2Parameters(utf8Bytes(salt), 2048, 64));
 
     return derivator.process(utf8Bytes(normalizedMnemonic));
+  }
+
+  /// Signs raw bytes with the private key for the given chain.
+  static Future<Uint8List> sign({
+    required String privateKeyHex,
+    required SupportedChain chain,
+    required Uint8List message,
+  }) async {
+    switch (chain) {
+      case SupportedChain.solana:
+        return _signSolana(privateKeyHex, message);
+      default:
+        throw UnsupportedError('sign is not yet supported for $chain');
+    }
+  }
+
+  /// Signs a personal message with the private key for the given chain.
+  static Future<Uint8List> signPersonalMessage({
+    required String privateKeyHex,
+    required SupportedChain chain,
+    required String message,
+  }) async {
+    switch (chain) {
+      case SupportedChain.solana:
+        return _signSolana(privateKeyHex, Uint8List.fromList(utf8.encode(message)));
+      default:
+        throw UnsupportedError(
+            'signPersonalMessage is not yet supported for $chain');
+    }
+  }
+
+  static Future<Uint8List> _signSolana(
+      String privateKeyHex, Uint8List message) async {
+    final privateKey = base58Decode(privateKeyHex);
+    // Solana private key: 64 bytes (32 seed + 32 public)
+    final seed = privateKey.sublist(0, 32);
+    final algorithm = Ed25519();
+    final keyPair = await algorithm.newKeyPairFromSeed(seed);
+    final signature = await algorithm.sign(message, keyPair: keyPair);
+    return Uint8List.fromList(signature.bytes);
   }
 
   /// Lightweight validation for empty input.
